@@ -1,1 +1,1 @@
-# treasure-hunt1
+# treasure-hunt1/demo
