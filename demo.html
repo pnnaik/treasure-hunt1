@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="gu">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Mission Clue Reveal</title>
+  <style>
+    
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      background: #111;
+      color: #fff;
+      font-family: sans-serif;
+    }
+    .card {
+      background: #222;
+      padding: 20px;
+      border-radius: 12px;
+      text-align: center;
+      max-width: 400px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    }
+    .card h2 {
+      margin-bottom: 10px;
+      color: #0af;
+    }
+    .card p {
+      font-size: 16px;
+      margin-bottom: 15px;
+    }
+    img {
+      max-width: 100%;
+      border-radius: 10px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.6);
+      margin-bottom: 15px;
+    }
+    .btn {
+      margin-top: 12px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 0;
+      background: #0a84ff;
+      color: #fff;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    .btn:hover {
+      background: #0066cc;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Mission Clue</h2>
+    <p>Scan કરનારને જોવા મળશે👇</p>
+    <img id="face" src="https://www.shutterstock.com/image-vector/flat-front-simple-car-icon-600nw-2136723397.jpg" alt="suspect">
+    <div>
+      <button class="btn" onclick="play()">Reveal Sound</button>
+    </div>
+  </div>
+
+  <script>
+    function play(){
+     const a = new Audio();
+      // Change this to your uploaded sound URL
+      a.src = "https://yourhost.com/sound.mp3";
+      a.play().catch(()=>{});
+    }
+  </script>
+</body>
+</html>
