@@ -1,75 +1,141 @@
 <!doctype html>
 <html lang="gu">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Mission Clue Reveal</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Scanner → Question → Winner</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
-    
-    body {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      margin: 0;
-      background: #111;
-      color: #fff;
-      font-family: sans-serif;
-    }
-    .card {
-      background: #222;
-      padding: 20px;
-      border-radius: 12px;
-      text-align: center;
-      max-width: 400px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-    }
-    .card h2 {
-      margin-bottom: 10px;
-      color: #0af;
-    }
-    .card p {
-      font-size: 16px;
-      margin-bottom: 15px;
-    }
-    img {
-      max-width: 100%;
-      border-radius: 10px;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.6);
-      margin-bottom: 15px;
-    }
-    .btn {
-      margin-top: 12px;
-      padding: 10px 14px;
-      border-radius: 8px;
-      border: 0;
-      background: #0a84ff;
-      color: #fff;
-      cursor: pointer;
-      font-size: 16px;
-    }
-    .btn:hover {
-      background: #0066cc;
-    }
+    .modal-centered { display:flex; align-items:center; justify-content:center; min-height:60vh; }
+    .confetti { position:fixed; pointer-events:none; z-index:1055; }
+    .qr-box { font-family:monospace; background:#f8f9fa; padding:10px; border-radius:6px; }
   </style>
 </head>
-<body>
-  <div class="card">
-    <h2>Mission Clue</h2>
-    <p>Scan કરનારને જોવા મળશે👇</p>
-    <img id="face" src="https://www.shutterstock.com/image-vector/flat-front-simple-car-icon-600nw-2136723397.jpg" alt="suspect">
-    <div>
-      <button class="btn" onclick="play()">Reveal Sound</button>
+<body class="p-4">
+
+<div class="container">
+  <h3>Scan → Question → Winner</h3>
+  <button id="mockScanBtn" class="btn btn-primary">Mock Scan</button>
+  <div id="log" class="mt-3"></div>
+</div>
+
+<!-- Question Modal -->
+<div id="questionModal" class="modal" tabindex="-1">
+  <div class="modal-dialog modal-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">પ્રશ્ન — ચોરી સંબંધિત</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p>જો કોઈ ગલીમાં અજાણ્યા વ્યક્તિએ ચોરી કરી હોય, શું કરવું જરૂરી છે?</p>
+        <div class="list-group">
+          <button class="list-group-item list-group-item-action" onclick="handleAnswer(true)">તુરંત પોલીસને ફોન કરો</button>
+          <button class="list-group-item list-group-item-action" onclick="handleAnswer(false)">અજાણ્યા સુધી રાહ જુઓ</button>
+          <button class="list-group-item list-group-item-action" onclick="handleAnswer(false)">સામાન્ય રીતે અવગણો</button>
+        </div>
+        <p id="hint" class="mt-2 text-muted small"></p>
+      </div>
     </div>
   </div>
+</div>
 
-  <script>
-    function play(){
-     const a = new Audio();
-      // Change this to your uploaded sound URL
-      a.src = "https://yourhost.com/sound.mp3";
-      a.play().catch(()=>{});
+<!-- Winner Modal -->
+<div id="winnerModal" class="modal" tabindex="-1">
+  <div class="modal-dialog modal-centered">
+    <div class="modal-content text-center p-3">
+      <div class="modal-body">
+        <h4>અભિનંદન! તમે સાચો જવાબ આપ્યો</h4>
+        <p>કૂપન: <strong id="couponCode"></strong></p>
+        <div>
+          <button class="btn btn-success me-2" onclick="alert('Redeem flow started')">Redeem</button>
+          <button class="btn btn-outline-primary" id="shareBtn">Share</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<audio id="winSound" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg" preload="auto"></audio>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  const qModal = new bootstrap.Modal(document.getElementById('questionModal'), {backdrop:'static', keyboard:false});
+  const wModal = new bootstrap.Modal(document.getElementById('winnerModal'), {backdrop:'static', keyboard:false});
+
+  // ===== Scanner Result =====
+  function onScannerResult(result) {
+    log(`Scanned: ${JSON.stringify(result)}`);
+    qModal.show();
+  }
+
+  // ===== Handle Answer =====
+  function handleAnswer(isCorrect){
+    if(isCorrect){
+      qModal.hide();
+      const coupon = 'CHORI-' + Math.random().toString(36).slice(2,7).toUpperCase();
+      document.getElementById('couponCode').innerText = coupon;
+      document.getElementById('winSound').play().catch(()=>{});
+      launchConfetti();
+      wModal.show();
+
+      document.getElementById('shareBtn').onclick = () => {
+        const text = `હું જીત્યો! કૂપન: ${coupon}`;
+        if(navigator.share){
+          navigator.share({title:'Winner', text}).catch(()=>{});
+        } else {
+          navigator.clipboard.writeText(text);
+          alert('Copied text to clipboard:\n' + text);
+        }
+      };
+
+      // Server log example (replace URL with real endpoint)
+      fetch('/api/winners',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({scanner: result, coupon, timestamp: new Date().toISOString()})
+      }).catch(()=> log('Server save failed (demo)'));
+    } else {
+      document.getElementById('hint').innerText = 'ખોટું જવાબ — ફરી પ્રયાસ કરો.';
     }
-  </script>
+  }
+
+  // ===== Confetti =====
+  function launchConfetti(){
+    for(let i=0;i<60;i++){
+      const el = document.createElement('div');
+      el.className='confetti';
+      el.style.left=(10+Math.random()*80)+'%';
+      el.style.top=(10+Math.random()*30)+'%';
+      el.style.width='8px'; el.style.height='12px';
+      el.style.background = `hsl(${Math.random()*360},80%,60%)`;
+      el.style.opacity=0.95;
+      el.style.transform = `rotate(${Math.random()*360}deg)`;
+      el.style.transition = 'transform 1200ms linear, opacity 1200ms linear';
+      document.body.appendChild(el);
+      setTimeout(()=> {
+        el.style.transform = `translateY(${400+Math.random()*300}px) rotate(${Math.random()*720}deg)`;
+        el.style.opacity='0';
+      }, 20);
+      setTimeout(()=> el.remove(), 1400);
+    }
+  }
+
+  // ===== Logging =====
+  function log(msg){
+    const l = document.getElementById('log');
+    const p = document.createElement('div');
+    p.innerText = `[${new Date().toLocaleTimeString()}] ${msg}`;
+    l.prepend(p);
+  }
+
+  // ===== Mock Scan Button =====
+  document.getElementById('mockScanBtn').addEventListener('click', ()=>{
+    onScannerResult({id:123, name:'ગેસ્ટ'});
+  });
+
+  // ===== Expose for real scanner =====
+  window.onScannerResult = onScannerResult;
+</script>
 </body>
 </html>
